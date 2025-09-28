@@ -69,6 +69,39 @@ def show_menu():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 waiting = False
 
+# Tela de Game Over / Vitória
+def show_gameover(score, win=False):
+    waiting = True
+    while waiting:
+        screen.fill(COLOR_BLACK)
+
+        if win:
+            msg_text = menu_font.render("YOU WIN!", True, COLOR_GREEN)
+        else:
+            msg_text = menu_font.render("GAME OVER", True, COLOR_RED)
+
+        score_text = score_font.render(f"Score: {score}", True, COLOR_WHITE)
+        restart_text = score_font.render("Press SPACE to Restart", True, COLOR_WHITE)
+        quit_text = score_font.render("Press ESC to Quit", True, COLOR_WHITE)
+
+        screen.blit(msg_text, (SCREEN_WIDTH//2 - msg_text.get_width()//2, 200))
+        screen.blit(score_text, (SCREEN_WIDTH//2 - score_text.get_width()//2, 300))
+        screen.blit(restart_text, (SCREEN_WIDTH//2 - restart_text.get_width()//2, 400))
+        screen.blit(quit_text, (SCREEN_WIDTH//2 - quit_text.get_width()//2, 460))
+
+        pygame.display.flip()
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    return True
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+
+
 # Criar blocos
 def create_blocks(rows=5, cols=8, spacing=10, top_offset=50):
     blocks = []
@@ -88,6 +121,7 @@ def game_loop():
     ball = pygame.Rect(SCREEN_WIDTH//2, SCREEN_HEIGHT//2, BALL_SIZE, BALL_SIZE)
     ball_speed = [5, 5]
     score = 0
+    lives = 3
 
     blocks = create_blocks()
 
@@ -117,7 +151,9 @@ def game_loop():
         # Colisão com paddle
         if ball.colliderect(paddle):
             ball_speed[0] *= -1
-            if bounce_sound: bounce_sound.play()
+            if bounce_sound: bounce_sound.play() 
+         if all(not b["visible"] for b in blocks):
+            return show_gameover(score, win=True)
 
         # Colisão com blocos
         for block in blocks:
@@ -151,6 +187,9 @@ def game_loop():
         screen.blit(score_text, (20, 20))
 
         pygame.display.flip()
+         # Vidas
+        lives_text = score_font.render(f"Lives: {lives}", True, COLOR_WHITE)
+        screen.blit(lives_text, (SCREEN_WIDTH - 200, 20))
 
     return True
 
